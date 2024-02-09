@@ -72,17 +72,17 @@ public class Primitives2DTests
         Vector2 d = l.end - l.start;
         float t = (c.position - l.start).Dot(d) / d.Dot(d);
 
-        if (t < 0.0f || t > 1.0f)
-            return false;
+        t = Mathf.Max(t, 0.0f);
+        t = Mathf.Min(t, 1.0f);
 
-        Vector2 closestPoint = l.start + d * t;
+        Vector2 closestPoint = l.start + t * d;
         MyLine circleToClosest = new MyLine(c.position, closestPoint);
 
         return circleToClosest.LengthSquared() < c.radius * c.radius;
    
     }
 
-    public static Vector2 LineCircleClosestPoint(MyLine l, MyCircle c)
+    public static Vector2 ClosestPoint(MyLine l, MyCircle c)
     {
         Vector2 d = l.end - l.start;
         float t = (c.position - l.start).Dot(d) / d.Dot(d);
@@ -126,15 +126,15 @@ public class Primitives2DTests
     {
         float theta = -Mathf.Deg2Rad(rectangle.rotation);
 
-        var t = new Transform2D();
+        var t = Transform2D.Identity;
         t.x.x = t.y.y = Mathf.Cos(theta);
-        t.x.y = t.y.x = Mathf.Sin(theta);
+        t.x.y = Mathf.Sin(theta);
+        t.y.x = Mathf.Sin(theta);
         t.y.x *= -1;
 
         MyLine localLine = new MyLine();
 
         Vector2 rotVector = line.start - rectangle.position;
-
         rotVector *= t;
         localLine.start = rotVector + rectangle.halfExtents;
         rotVector = line.end - rectangle.position;
@@ -246,7 +246,7 @@ public class Primitives2DTests
             new Vector2(min.x, max.y), new Vector2(max.x, min.y)
         };
 
-        float theta = -Mathf.Deg2Rad(rect.rotation);
+        float theta = Mathf.Deg2Rad(rect.rotation);
         var t = new Transform2D();
         t.x.x = t.y.y = Mathf.Cos(theta);
         t.x.y = t.y.x = Mathf.Sin(theta);
