@@ -15,8 +15,9 @@ public class Testing2D : Node2D
 
 	float moveSpeed = 150f;
 	Vector2 moveDir;
+	Vector2 lineIntersectionPoint;
 
-	Vector2[] orientedAABBVertices;
+	MyLine secondLine;
  
 	public override void _Ready()
 	{
@@ -43,7 +44,8 @@ public class Testing2D : Node2D
 
     public override void _PhysicsProcess(float delta)
     {
-        if (Primitives2DTests.LineCircle(myLine, myCircle) || Primitives2DTests.LineOrientedRecrangle(myLine, orientedRectangle))
+        if (Primitives2DTests.LineCircle(myLine, myCircle) || Primitives2DTests.LineOrientedRecrangle(myLine, orientedRectangle) 
+			|| Primitives2DTests.LineLine(myLine, secondLine, ref lineIntersectionPoint))
         {
             lineHitColor = Colors.Red;
         }
@@ -91,6 +93,40 @@ public class Testing2D : Node2D
 	{
 		DrawCircle(myCircle.position, myCircle.radius, Colors.Green);
 		DrawLine(myLine.start, myLine.end, lineHitColor);
+		DrawLine(secondLine.start, secondLine.end, Colors.Green);
+
+        //Draw oriented rect
+        var t = new Transform2D();
+        t.x.x = t.y.y = Mathf.Cos(orientedRectangle.rotation);
+        t.x.y = t.y.x = Mathf.Sin(orientedRectangle.rotation);
+        t.y.x *= -1;
+
+		Vector2 tempPos = orientedRectangle.position;
+		//translate first to origin
+		orientedRectangle.position = Vector2.Zero;
+		Vector2 topLeft = orientedRectangle.position - orientedRectangle.halfExtents;
+        Vector2 bottomRight = orientedRectangle.position + orientedRectangle.halfExtents;
+		Vector2 topRight = new Vector2(bottomRight.x, topLeft.y);
+		Vector2 bottomLeft = new Vector2(topLeft.x, bottomRight.y);
+		//rotate
+		topLeft *= t;
+		bottomLeft *= t;
+		topRight *= t;
+		bottomRight *= t;
+		//translate back
+		orientedRectangle.position = tempPos;
+		topLeft += orientedRectangle.position;
+		bottomRight += orientedRectangle.position;
+		bottomLeft += orientedRectangle.position;
+		topRight += orientedRectangle.position;
+  
+
+
+        DrawLine(topLeft, topRight, Colors.Green);
+        DrawLine(topLeft, bottomLeft, Colors.Green);
+        DrawLine(bottomLeft, bottomRight, Colors.Green);
+        DrawLine(bottomRight, topRight, Colors.Green);
+
 
     }
 
@@ -106,12 +142,13 @@ public class Testing2D : Node2D
 		orientedRectangle.position = rectangle.Position;
 		orientedRectangle.halfExtents = new Vector2(rectangle.Texture.GetWidth() / 2,
 										rectangle.Texture.GetHeight() / 2);
-		orientedRectangle.rotation = rectangle.RotationDegrees;
+		orientedRectangle.rotation = rectangle.Rotation;
     }
 
 	private void InitLine()
 	{
 		myLine = new MyLine(Vector2.Zero, Vector2.Zero);
+		secondLine = new MyLine(new Vector2(100f, 200f), new Vector2(150f, 300f));
 	}
 	private void UpdateLine()
 	{

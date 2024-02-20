@@ -51,12 +51,12 @@ public class Primitives2DTests
     {
         Vector2 rotVector = p - rectangle.position;
 
-        float theta = -Mathf.Deg2Rad(rectangle.rotation);
+        float theta = -rectangle.rotation;
 
         var t = new Transform2D();
         t.x.x = t.y.y = Mathf.Cos(theta);
-        t.x.y = t.y.x = Mathf.Sin(theta);
-        t.y.x *= -1;
+        t.x.y = t.y.x = -Mathf.Sin(theta);
+        
 
         rotVector = t * rotVector;
 
@@ -87,12 +87,44 @@ public class Primitives2DTests
         Vector2 d = l.end - l.start;
         float t = (c.position - l.start).Dot(d) / d.Dot(d);
 
-        if (t < 0.0f || t > 1.0f)
-            return c.position;
+        t = Mathf.Max(t, 0.0f);
+        t = Mathf.Min(t, 1.0f);
 
         Vector2 closestPoint = l.start + d * t;
 
         return closestPoint;
+    }
+
+    public static bool LineLine(MyLine l1, MyLine l2, ref Vector2 pointOfIntersection)
+    {
+        Vector2 a = l1.start;
+        Vector2 b = l1.end;
+        Vector2 c = l2.start;
+        Vector2 d = l2.end;
+
+        Vector2 ab = b - a;
+        Vector2 cd = d - c;
+
+        float aTop = (d.x - c.x) * (c.y - a.y) - (d.y - c.y) * (c.x - a.x);
+        float bottom = (d.x - c.x) * (b.y - a.y) - (d.y - c.y) * (b.x - a.x);
+        float bTop = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    
+
+        if (bottom == 0)
+            return false;
+
+
+        float alpha = aTop / bottom;
+        float beta = bTop / bottom;
+
+        if(alpha > 0 && alpha <= 1f && beta > 0 && beta <= 1f)
+        {
+            pointOfIntersection = a + alpha * ab;
+            return true;
+        }
+
+        return false;
+
     }
 
     public static bool LineRectangle(MyLine l, Rectangle r)
@@ -124,7 +156,7 @@ public class Primitives2DTests
 
     public static bool LineOrientedRecrangle(MyLine line, OrientedRectangle rectangle)
     {
-        float theta = -Mathf.Deg2Rad(rectangle.rotation);
+        float theta = -rectangle.rotation;
 
         var t = Transform2D.Identity;
         t.x.x = t.y.y = Mathf.Cos(theta);
@@ -135,10 +167,10 @@ public class Primitives2DTests
         MyLine localLine = new MyLine();
 
         Vector2 rotVector = line.start - rectangle.position;
-        rotVector *= t;
+        rotVector = t * rotVector;
         localLine.start = rotVector + rectangle.halfExtents;
         rotVector = line.end - rectangle.position;
-        rotVector *= t;
+        rotVector = t * rotVector;
         localLine.end = rotVector + rectangle.halfExtents;
 
         Rectangle localRect = new Rectangle(new Vector2(0, 0), rectangle.halfExtents * 2.0f);
@@ -174,14 +206,14 @@ public class Primitives2DTests
     {
         Vector2 r = circle.position - rectangle.position;
 
-        float theta = -Mathf.Deg2Rad(rectangle.rotation);
+        float theta = -rectangle.rotation;
 
         var t = new Transform2D();
         t.x.x = t.y.y = Mathf.Cos(theta);
         t.x.y = t.y.x = Mathf.Sin(theta);
         t.y.x *= -1;
 
-        r *= t;
+        r = t * r;
 
         MyCircle c = new MyCircle(r + rectangle.halfExtents, circle.radius);
 

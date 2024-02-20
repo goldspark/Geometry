@@ -10,7 +10,7 @@ script = ExtResource( 2 )
 position = Vector2( 236, 186 )
 
 [node name="OrientedRect" type="Sprite" parent="."]
-position = Vector2( 282, 125 )
+position = Vector2( 275, 92 )
 rotation = 0.785398
 texture = ExtResource( 1 )
 
