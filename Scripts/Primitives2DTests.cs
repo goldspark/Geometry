@@ -49,19 +49,30 @@ public class Primitives2DTests
 
     public static bool PointInOrientedRectangle(Vector2 p, OrientedRectangle rectangle)
     {
-        Vector2 rotVector = p - rectangle.position;
+        //Vector2 rotVector = p - rectangle.position;
+
+        Vector2 localPoint = p;
+
+        Vector2 side = new Vector2(Mathf.Cos(rectangle.rotation), Mathf.Sin(rectangle.rotation));
+        Vector2 up = new Vector2(Mathf.Cos(rectangle.rotation), -Mathf.Sin(rectangle.rotation));
+
+        float tX = -localPoint.Dot(side);
+        float tY = -localPoint.Dot(up);
 
         float theta = -rectangle.rotation;
 
         var t = new Transform2D();
         t.x.x = t.y.y = Mathf.Cos(theta);
-        t.x.y = t.y.x = -Mathf.Sin(theta);
-        
+        t.x.y = t.y.x = Mathf.Sin(theta);
+        t.y.x *= -1;
+        t.origin.x = tX;
+        t.origin.y = tY;
 
-        rotVector = t * rotVector;
+        localPoint = t * localPoint;
+        //rotVector = t * rotVector;
 
         Rectangle localRect = new Rectangle(new Vector2(0, 0), rectangle.halfExtents * 2.0f);
-        Vector2 localPoint = rotVector + rectangle.halfExtents;
+        //Vector2 localPoint = rotVector + rectangle.halfExtents;
 
         return PointInRectangle(localPoint, localRect);
 
